@@ -6,7 +6,10 @@ interface VatLike {
     function debt() external view returns (uint256);
 }
 interface EndLike {
+    function cage() external;
     function thaw() external;
+    function wait() external returns (uint256);
+    function debt() external returns (uint256);
 }
 interface IERC3156FlashBorrower {
     function onFlashLoan(
@@ -20,7 +23,7 @@ interface IERC3156FlashBorrower {
 interface FlashLike {
     function dai() external view returns (address);
     function vat() external view returns (address);
-    function maxFlashLoan() external view returns (uint256);
+    function maxFlashLoan(address) external view returns (uint256);
     function flashLoan(IERC3156FlashBorrower, address, uint256, bytes calldata) external returns (bool);
 }
 interface ERC20Like {
@@ -39,11 +42,12 @@ contract FlashThaw {
     }
 
     function flashAndThaw() external {
-        uint256 max = flash.maxFlashLoan();
+        address dai = flash.dai();
+        uint256 max = flash.maxFlashLoan(dai);
         VatLike vat = VatLike(flash.vat());
         uint256 available = vat.Line() - vat.debt();
         max = available < max ? available : max;
-        flash.flashLoan(IERC3156FlashBorrower(address(this)), flash.dai(), max, "");
+        flash.flashLoan(IERC3156FlashBorrower(address(this)), dai, max, "");
     }
 
     function onFlashLoan(
