@@ -43,11 +43,7 @@ contract FlashThaw {
 
     function flashAndThaw() external {
         address dai = flash.dai();
-        uint256 max = flash.maxFlashLoan(dai);
-        VatLike vat = VatLike(flash.vat());
-        uint256 available = vat.Line() - vat.debt();
-        max = available < max ? available : max;
-        flash.flashLoan(IERC3156FlashBorrower(address(this)), dai, max, "");
+        flash.flashLoan(IERC3156FlashBorrower(address(this)), dai, flash.maxFlashLoan(dai), "");
     }
 
     function onFlashLoan(
